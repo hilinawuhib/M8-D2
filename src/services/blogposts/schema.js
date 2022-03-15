@@ -54,7 +54,7 @@ blogSchema.static("findBlogsWithAuthors", async function (mongoQuery) {
     .sort(mongoQuery.options.sort)
     .populate({
       path: "authors",
-      select: "firstName ,lastName,email.password,role",
+      select: "firstName ,lastName,email,password,role",
     });
   return { total, blogs };
 });

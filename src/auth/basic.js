@@ -33,9 +33,9 @@ export const basicAuthMiddlewareBlog = async (req, res, next) => {
    
     const base64Credentials = req.headers.authorization.split(" ")[1];
 
-    const [author] = atob(base64Credentials).split(":");
+    const [email,password] = atob(base64Credentials).split(":");
 
-    const blog = await BlogsModel.checkCredentials(author.email,author.password);
+    const blog = await BlogsModel.checkCredentials(email,password);
 
     if (blog) {
       

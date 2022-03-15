@@ -34,8 +34,7 @@ blogsRouter.get(
 
 blogsRouter.get(
   "/:blogId",
-
-
+ 
   async (req, res, next) => {
     try {
       const blogId = req.params.blogId;
@@ -54,7 +53,7 @@ blogsRouter.get(
 
 blogsRouter.put(
   "/:blogId",
-  
+
 
   async (req, res, next) => {
     try {
@@ -74,19 +73,23 @@ blogsRouter.put(
     }
   }
 );
-blogsRouter.delete("/:blogId", async (req, res, next) => {
-  try {
-    const blogId = req.params.blogId;
-    const deletedBlog = await BlogsModel.findByIdAndDelete(blogId);
-    if (deletedBlog) {
-      res.status(204).send();
-    } else {
-      next(createHttpError(404, `blog with id ${blogId} not found!`));
+blogsRouter.delete(
+  "/:blogId",
+ 
+  async (req, res, next) => {
+    try {
+      const blogId = req.params.blogId;
+      const deletedBlog = await BlogsModel.findByIdAndDelete(blogId);
+      if (deletedBlog) {
+        res.status(204).send();
+      } else {
+        next(createHttpError(404, `blog with id ${blogId} not found!`));
+      }
+    } catch (error) {
+      next(error);
     }
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 //blogs with comments
 
