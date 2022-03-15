@@ -18,6 +18,7 @@ mongoose.connect(process.env.MONGO_CONNECTION);
 mongoose.connection.on("connected", () => {
   console.log("successfully connected to mongo");
   server.listen(port, () => {
+    console.table(listEndpoints(server))
     console.log("server running on port ", port);
   });
 });
