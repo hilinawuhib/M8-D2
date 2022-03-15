@@ -1,7 +1,7 @@
 import express from "express";
 import createHttpError from "http-errors";
 import BlogsModel from "./schema.js";
-import { basicAuthMiddlewareBlog } from "../../auth/basic.js";
+import { basicAuthMiddleware } from "../../auth/basic.js";
 
 import CommentsModel from "../comments/schema.js";
 import q2m from "query-to-mongo";
@@ -20,7 +20,6 @@ blogsRouter.post("/", async (req, res, next) => {
 });
 blogsRouter.get(
   "/",
-  
 
   async (req, res, next) => {
     try {
@@ -34,12 +33,15 @@ blogsRouter.get(
 
 blogsRouter.get(
   "/:blogId",
- 
+  basicAuthMiddleware,
+
   async (req, res, next) => {
     try {
       const blogId = req.params.blogId;
-
-      const blog = await BlogsModel.findById(blogId);
+      const blog = await BlogsModel.findById(blogId).populate({
+        path: "author",
+        select: "firstName ,lastName,email,password,role",
+      });
       if (blog) {
         res.send(blog);
       } else {
@@ -53,7 +55,7 @@ blogsRouter.get(
 
 blogsRouter.put(
   "/:blogId",
-
+  basicAuthMiddleware,
 
   async (req, res, next) => {
     try {
@@ -73,23 +75,19 @@ blogsRouter.put(
     }
   }
 );
-blogsRouter.delete(
-  "/:blogId",
- 
-  async (req, res, next) => {
-    try {
-      const blogId = req.params.blogId;
-      const deletedBlog = await BlogsModel.findByIdAndDelete(blogId);
-      if (deletedBlog) {
-        res.status(204).send();
-      } else {
-        next(createHttpError(404, `blog with id ${blogId} not found!`));
-      }
-    } catch (error) {
-      next(error);
+blogsRouter.delete("/:blogId", basicAuthMiddleware, async (req, res, next) => {
+  try {
+    const blogId = req.params.blogId;
+    const deletedBlog = await BlogsModel.findByIdAndDelete(blogId);
+    if (deletedBlog) {
+      res.status(204).send();
+    } else {
+      next(createHttpError(404, `blog with id ${blogId} not found!`));
     }
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 //blogs with comments
 

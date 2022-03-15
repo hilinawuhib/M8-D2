@@ -10,7 +10,7 @@ const blogSchema = new Schema(
       value: { type: Number, required: true },
       unit: { type: String, required: true },
     },
-    authors: [{ type: Schema.Types.ObjectId, ref: "author" }],
+    author: { type: Schema.Types.ObjectId, required: true, ref: "Authors" },
 
     comment: [
       {
@@ -40,29 +40,17 @@ blogSchema.methods.toJSON = function () {
   const blogDocument = this;
   const blogObject = blogDocument.toObject();
 
-  delete blogObject.authors.password;
+  delete blogObject.author.password;
   delete blogObject.__v;
 
   return blogObject;
 };
 
-blogSchema.static("findBlogsWithAuthors", async function (mongoQuery) {
-  const total = await this.countDocuments(mongoQuery.criteria);
-  const blogs = await this.find(mongoQuery.criteria)
-    .limit(mongoQuery.options.limit)
-    .skip(mongoQuery.options.skip)
-    .sort(mongoQuery.options.sort)
-    .populate({
-      path: "authors",
-      select: "firstName ,lastName,email,password,role",
-    });
-  return { total, blogs };
-});
-blogSchema.statics.checkCredentials = async function (authors, plainPW) {
-  const blog = await this.findOne({ authors });
+blogSchema.statics.checkCredentials = async function (author, plainPW) {
+  const blog = await this.findOne({ author });
 
   if (blog) {
-    const isMatch = await bcrypt.compare(plainPW, blog.authors.password);
+    const isMatch = await bcrypt.compare(plainPW, blog.author.password);
 
     if (isMatch) {
       return blog;

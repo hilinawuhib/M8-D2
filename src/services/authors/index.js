@@ -1,10 +1,10 @@
 import express from "express";
 import createHttpError from "http-errors";
-import { basicAuthMiddlewareAuthor } from "../../auth/basic.js";
+import { basicAuthMiddleware } from "../../auth/basic.js";
 import AuthorsModel from "./schema.js";
 const authorsRouter = express.Router();
 
-authorsRouter.get("/",basicAuthMiddlewareAuthor, async (req, res, next) => {
+authorsRouter.get("/",basicAuthMiddleware, async (req, res, next) => {
   try {
     const authors = await AuthorsModel.find();
     res.send(authors);
@@ -12,7 +12,7 @@ authorsRouter.get("/",basicAuthMiddlewareAuthor, async (req, res, next) => {
     next(error);
   }
 });
-authorsRouter.get("/:authorId",basicAuthMiddlewareAuthor, async (req, res, next) => {
+authorsRouter.get("/:authorId",basicAuthMiddleware, async (req, res, next) => {
   try {
     const authorId = req.params.authorId;
     const author = await AuthorsModel.findById(authorId);
@@ -34,7 +34,7 @@ authorsRouter.post("/",async (req, res, next) => {
     next(error);
   }
 });
-authorsRouter.put("/:authorId",basicAuthMiddlewareAuthor, async (req, res, next) => {
+authorsRouter.put("/:authorId",basicAuthMiddleware, async (req, res, next) => {
   try {
     const authorId = req.params.authorId;
     const updatedAuthor = await AuthorsModel.findByIdAndUpdate(
@@ -53,7 +53,7 @@ authorsRouter.put("/:authorId",basicAuthMiddlewareAuthor, async (req, res, next)
     next(error);
   }
 });
-authorsRouter.delete("/:authorId",basicAuthMiddlewareAuthor, async (req, res, next) => {
+authorsRouter.delete("/:authorId",basicAuthMiddleware, async (req, res, next) => {
   try {
     const authorId = req.params.authorId;
     const deletedAuthor = await AuthorsModel.findByIdAndDelete(authorId);
