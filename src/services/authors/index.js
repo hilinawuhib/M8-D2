@@ -2,65 +2,98 @@ import express from "express";
 import createHttpError from "http-errors";
 import { basicAuthMiddleware } from "../../auth/basic.js";
 import AuthorsModel from "./schema.js";
+import { adminOnlyMiddleware } from "../../auth/admin.js";
+import { authenticateAuthor } from "../../auth/tools.js";
+import { JWTAuthMiddleware } from "../../auth/token.js";
 const authorsRouter = express.Router();
 
-authorsRouter.get("/",basicAuthMiddleware, async (req, res, next) => {
-  try {
-    const authors = await AuthorsModel.find();
-    res.send(authors);
-  } catch (error) {
-    next(error);
-  }
-});
-authorsRouter.get("/:authorId",basicAuthMiddleware, async (req, res, next) => {
-  try {
-    const authorId = req.params.authorId;
-    const author = await AuthorsModel.findById(authorId);
-    if (author) {
-      res.send(author);
-    } else {
-      next(createHttpError(404, `author with id ${authorId} not found!`));
+authorsRouter.get(
+  "/",
+  JWTAuthMiddleware,
+  adminOnlyMiddleware,
+  async (req, res, next) => {
+    try {
+      const authors = await AuthorsModel.find();
+      res.send(authors);
+    } catch (error) {
+      next(error);
     }
-  } catch (error) {
-    next(error);
   }
-});
-authorsRouter.post("/",async (req, res, next) => {
+);
+authorsRouter.get(
+  "/:authorId",
+  JWTAuthMiddleware,
+  adminOnlyMiddleware,
+  async (req, res, next) => {
+    try {
+      const authorId = req.params.authorId;
+      const author = await AuthorsModel.findById(authorId);
+      if (author) {
+        res.send(author);
+      } else {
+        next(createHttpError(404, `author with id ${authorId} not found!`));
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+authorsRouter.post("/", async (req, res, next) => {
   try {
-    const newAuthor = new AuthorsModel(req.body);
-    const { _id } = await newAuthor.save();
+    const author = new AuthorsModel(req.body);
+    const { _id } = await author.save();
     res.status(201).send({ _id });
   } catch (error) {
     next(error);
   }
 });
-authorsRouter.put("/:authorId",basicAuthMiddleware, async (req, res, next) => {
-  try {
-    const authorId = req.params.authorId;
-    const updatedAuthor = await AuthorsModel.findByIdAndUpdate(
-      authorId,
-      req.body,
-      {
+authorsRouter.put(
+  "/:authorId",
+  basicAuthMiddleware,
+  adminOnlyMiddleware,
+  async (req, res, next) => {
+    try {
+      const authorId = req.params.authorId;
+      const author = await AuthorsModel.findByIdAndUpdate(authorId, req.body, {
         new: true,
+      });
+      if (author) {
+        res.send(author);
+      } else {
+        next(createHttpError(404, `author with id ${authorId} not found!`));
       }
-    );
-    if (updatedAuthor) {
-      res.send(updatedAuthor);
-    } else {
-      next(createHttpError(404, `author with id ${authorId} not found!`));
+    } catch (error) {
+      next(error);
     }
-  } catch (error) {
-    next(error);
   }
-});
-authorsRouter.delete("/:authorId",basicAuthMiddleware, async (req, res, next) => {
+);
+authorsRouter.delete(
+  "/:authorId",
+  basicAuthMiddleware,
+  adminOnlyMiddleware,
+  async (req, res, next) => {
+    try {
+      const authorId = req.params.authorId;
+      const deletedAuthor = await AuthorsModel.findByIdAndDelete(authorId);
+      if (deletedAuthor) {
+        res.status(204).send();
+      } else {
+        next(createHttpError(404, `author with id ${authorId} not found!`));
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+authorsRouter.post("/login", async (req, res, next) => {
   try {
-    const authorId = req.params.authorId;
-    const deletedAuthor = await AuthorsModel.findByIdAndDelete(authorId);
-    if (deletedAuthor) {
-      res.status(204).send();
+    const { email, password } = req.body;
+    const author = await AuthorsModel.checkCredentials(email, password);
+    if (author) {
+      const accessToken = await authenticateAuthor(author);
+      res.send({ accessToken });
     } else {
-      next(createHttpError(404, `author with id ${authorId} not found!`));
+      next(createHttpError(401, "crediential are not OK!"));
     }
   } catch (error) {
     next(error);

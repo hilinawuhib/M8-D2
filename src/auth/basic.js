@@ -13,10 +13,10 @@ export const basicAuthMiddleware = async (req, res, next) => {
 
     const [email, password] = atob(base64Credentials).split(":");
 
-    const authors = await AuthorsModel.checkCredentials(email, password);
+    const author = await AuthorsModel.checkCredentials(email, password);
 
-    if (authors) {
-      req.author = authors;
+    if (author) {
+      req.author = author;
       next();
     } else {
       next(createError(401, "Credentials are not OK!"));
