@@ -31,15 +31,15 @@ authorsRouter.get(
   passport.authenticate("google"),
   (req, res, next) => {
     try {
-      // console.log(req.author.token);
+      console.log(req.user.token);
 
-      if (req.author.role === "Admin") {
+      if (req.user.role === "Admin") {
         res.redirect(
-          `${process.env.FE_URL}/admin?accessToken=${req.author.token}`
+          `${process.env.FE_URL}/admin?accessToken=${req.user.token}`
         );
       } else {
         res.redirect(
-          `${process.env.FE_URL}/profile?accessToken=${req.author.token}`
+          `${process.env.FE_URL}/profile?accessToken=${req.user.token}`
         );
       }
     } catch (error) {
