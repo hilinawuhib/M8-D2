@@ -5,6 +5,7 @@ import AuthorsModel from "./schema.js";
 import { adminOnlyMiddleware } from "../../auth/admin.js";
 import { authenticateAuthor } from "../../auth/tools.js";
 import { JWTAuthMiddleware } from "../../auth/token.js";
+import passport from "passport";
 const authorsRouter = express.Router();
 
 authorsRouter.get(
@@ -20,6 +21,33 @@ authorsRouter.get(
     }
   }
 );
+authorsRouter.get(
+  "/googleLogin",
+  passport.authenticate("google", { scope: ["email", "profile"] })
+);
+
+authorsRouter.get(
+  "/googleRedirect",
+  passport.authenticate("google"),
+  (req, res, next) => {
+    try {
+      console.log(req.author.token);
+
+      if (req.author.role === "Admin") {
+        res.redirect(
+          `${process.env.FE_URL}/admin?accessToken=${req.author.token}`
+        );
+      } else {
+        res.redirect(
+          `${process.env.FE_URL}/profile?accessToken=${req.author.token}`
+        );
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 authorsRouter.get(
   "/:authorId",
   JWTAuthMiddleware,

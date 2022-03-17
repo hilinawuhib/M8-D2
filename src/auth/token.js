@@ -9,7 +9,6 @@ export const JWTAuthMiddleware = async (req, res, next) => {
   } else {
     try {
       const token = req.headers.authorization.replace("Bearer ", "");
-
       const payload = await verifyJWTToken(token);
 
       req.author = {
