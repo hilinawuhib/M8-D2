@@ -8,7 +8,7 @@ const googleStrategy = new GoogleStrategy(
     clientSecret: process.env.GOOGLE_SECRET,
     callbackURL: `${process.env.API_URL}/authors/googleRedirect`,
   },
-  async (accessToken, profile, passportNext) => {
+  async (accessToken, refreshToken, profile, passportNext) => {
     try {
       console.log(profile);
 
@@ -24,9 +24,8 @@ const googleStrategy = new GoogleStrategy(
        
 
         const newAuthor = new AuthorsModel({
-          first_name: { type: String, required: true },
-          last_name: { type: String, required: true },
-          role: { type: String, enum: ["author", "Admin"], default: "author" },
+          first_name: profile.name.givenName,
+          last_name: profile.name.familyName,
           email: profile.emails[0].value,
           googleId: profile.id,
         });

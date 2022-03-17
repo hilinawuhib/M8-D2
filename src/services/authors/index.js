@@ -31,7 +31,7 @@ authorsRouter.get(
   passport.authenticate("google"),
   (req, res, next) => {
     try {
-      console.log(req.author.token);
+      // console.log(req.author.token);
 
       if (req.author.role === "Admin") {
         res.redirect(
